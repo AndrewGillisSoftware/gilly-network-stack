@@ -107,7 +107,7 @@ class MailParcel:
         self.from_address = partial_mail_parcel.from_address
         self.to_address = partial_mail_parcel.to_address
         self.message = ""
-        self.timestamp = partial_mail_parcel.time_stamp
+        self.time_stamp = partial_mail_parcel.time_stamp
 
         relevant_mail_parcels:PartialMailParcel = self.__list_mail_with_ID(partial_mail_parcel, mail_parcels)
 

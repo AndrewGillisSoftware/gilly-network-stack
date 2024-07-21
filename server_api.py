@@ -48,7 +48,13 @@ class ServerTransport:
         connected = True
         while connected:
             # Get Client Message
-            client_message = conn.recv(NetworkConfigs.MAX_PACKET_LENGTH_BYTES)
+            try:
+                client_message = conn.recv(NetworkConfigs.MAX_PACKET_LENGTH_BYTES)
+            except:
+                # Client Force Closed
+                print(f"[FORCE DISCONNECTED] {addr}")
+                self.__deregister_client(addr)
+                return
 
             # Client Sent a Message
             if client_message:
@@ -76,7 +82,6 @@ class ServerTransport:
         
         self.__deregister_client(client_address)
         conn.close()
-        print(f"[CLOSED / DEREGISTERED] {addr}")
 
     def start(self):
         print("[STARTING] server is starting...")

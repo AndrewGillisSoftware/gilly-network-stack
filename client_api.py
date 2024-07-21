@@ -17,8 +17,6 @@ class ClientTransport:
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect((server_address, NetworkConfigs.PORT))
         self.connected = True
-
-        self.request_active_clients()
         return
     
     def request_active_clients(self):
