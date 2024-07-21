@@ -5,7 +5,7 @@ def test_large_mail_parcel_split():
     NetworkConfigs.MAX_PACKET_LENGTH_BYTES = 15
     largeMailParcel = MailParcel("Frog", "1.1.1.1", "2.2.2.2", "This frog jumps over the big blue moon")
 
-    mail = largeMailParcel.split()
+    mail = largeMailParcel.slice()
     print(mail)
     assert True
 

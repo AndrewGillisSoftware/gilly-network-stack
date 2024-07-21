@@ -33,7 +33,7 @@ class ClientTransport:
         parcel = MailParcel(ID, self.client_address, to_address, string_message)
 
         # If parcel is large split it up into multiple
-        partial_parcels = parcel.split()
+        partial_parcels = parcel.slice()
 
         # Send all segments of the parcel
         for partial_parcel in partial_parcels:
@@ -48,7 +48,7 @@ class ClientTransport:
             self.server_active_clients.extend(eval(mail_response))
             self.mail_box.remove(mail)
     
-    def read_mail_from_server(self):
+    def listen(self):
         partial_parcel = self.client.recv(NetworkConfigs.MAX_PACKET_LENGTH_BYTES).decode(NetworkConfigs.ENCODING_FORMAT)
         partial_parcel = PartialMailParcel.from_dict(json.loads(partial_parcel))
 

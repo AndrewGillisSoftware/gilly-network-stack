@@ -52,24 +52,17 @@ class ServerTransport:
 
             # Client Sent a Message
             if client_message:
-                client_message_parcel : MailParcel = MailParcel.from_dict(json.loads(client_message))
+                client_message_parcel : PartialMailParcel = PartialMailParcel.from_dict(json.loads(client_message))
 
-                if DISCONNECT_MESSAGE == client_message_parcel.purpose:
+                if NetworkConfigs.DISCONNECT == client_message_parcel.ID:
                     print(f"[DISCONNECTED] {addr}")
                     connected = False
                     break
-                elif NEXT_PARCEL == client_message_parcel.purpose:
-                    # Send Client its mail if requested
-                    box = self.__get_mailbox(client_address)
-                    next_parcel_for_client = box.get_next_parcel()
-                    if next_parcel_for_client.purpose != EMPTY_PARCEL:
-                        print(f"[Sending Next Parcel of Mail to {client_address}] {next_parcel_for_client}")
-                    send_proto(conn, next_parcel_for_client)
-                elif GET_ACTIVE_CLIENTS == client_message_parcel.purpose:
-                    self.send_to_client(GET_ACTIVE_CLIENTS_RESPONSE, self.address, client_address, str(self.__get_active_clients()))
+                elif NetworkConfigs.ACTIVE_CLIENTS == client_message_parcel.ID:
+                    self.send_to_client(NetworkConfigs.ACTIVE_CLIENTS, self.address, client_address, str(self.__get_active_clients()))
                 else:
                     cmp = client_message_parcel
-                    self.send_to_client(cmp.purpose, cmp.from_address, cmp.to_address, cmp.message)
+                    self.send_to_client(cmp.ID, cmp.from_address, cmp.to_address, cmp.message)
                     
                 print(f"[{client_address}] {client_message}")
 
@@ -100,7 +93,7 @@ class ServerTransport:
 
         # Split mail into partial parcels if needed
         parcel = MailParcel(ID, from_address, to_address, msg)
-        partial_parcels = parcel.split()
+        partial_parcels = parcel.slice()
 
         # Add all of the generated partial parcels to target mailbox
         for partial_parcel in partial_parcels:

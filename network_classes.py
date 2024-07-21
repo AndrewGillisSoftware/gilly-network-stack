@@ -5,7 +5,7 @@ import json
 import time
 
 class NetworkConfigs:
-    PORT:int = 5051
+    PORT:int = 5050
     ENCODING_FORMAT:str = 'utf-8'
     MAX_PACKET_LENGTH_BYTES:int = 0xFFFF
     ACK:str = "G_N_S_ACK"
@@ -67,7 +67,7 @@ class MailParcel:
         self.timestamp = time_stamp if time_stamp else str(time.time())
         return
     
-    def split(self) -> list[PartialMailParcel]:
+    def slice(self) -> list[PartialMailParcel]:
         mail_parcels:list[PartialMailParcel] = []
 
         segment_ID:int = 0
