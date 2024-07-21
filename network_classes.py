@@ -1,8 +1,8 @@
+import threading
 import asyncio
 import socket
 import json
 import time
-import random
 
 class NetworkConfigs:
     PORT:int = 5051
@@ -112,10 +112,10 @@ class MailParcel:
         relevant_mail_parcels:PartialMailParcel = self.__list_mail_with_ID(partial_mail_parcel, mail_parcels)
 
         if len(relevant_mail_parcels) == 0:
-            return False
+            return False, relevant_mail_parcels
         
         if len(relevant_mail_parcels) != relevant_mail_parcels[0].segment_count:
-            return False
+            return False, relevant_mail_parcels
 
         # Sort Segments
         relevant_mail_parcels.sort(key=lambda mail: mail.segment_ID)
@@ -124,5 +124,5 @@ class MailParcel:
         for mail in relevant_mail_parcels:
             self.message += mail.message
 
-        return True
+        return True, relevant_mail_parcels
     
