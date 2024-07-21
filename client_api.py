@@ -17,6 +17,8 @@ class ClientTransport:
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect((server_address, NetworkConfigs.PORT))
         self.connected = True
+
+        self.request_active_clients()
         return
     
     def request_active_clients(self):
@@ -28,7 +30,7 @@ class ClientTransport:
         return
     
     # If IP is server the message is for the server
-    def send_parcel(self, ID, to_address, string_message) -> PartialMailParcel:
+    def send_parcel(self, ID, to_address, string_message):
         # Create Parcel
         parcel = MailParcel(ID, self.client_address, to_address, string_message)
 
@@ -37,7 +39,7 @@ class ClientTransport:
 
         # Send all segments of the parcel
         for partial_parcel in partial_parcels:
-            self.client.send(partial_parcel)
+            self.client.send(str(partial_parcel).encode(NetworkConfigs.ENCODING_FORMAT))
 
         return
     

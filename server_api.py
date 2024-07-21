@@ -66,9 +66,13 @@ class ServerTransport:
                     
                 print(f"[{client_address}] {client_message}")
 
-                # Server reacts to client
-                if self.handle_client != None:
-                    self.handle_client(client_message)
+                # Send all of the mail for the client
+                box = self.__get_mailbox(client_address)
+
+                current_parcel = box.get_next_parcel()
+                while current_parcel:
+                    conn.send(str(current_parcel).encode(NetworkConfigs.ENCODING_FORMAT))
+                    current_parcel = box.get_next_parcel()
         
         self.__deregister_client(client_address)
         conn.close()

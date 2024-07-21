@@ -5,7 +5,7 @@ import json
 import time
 
 class NetworkConfigs:
-    PORT:int = 5050
+    PORT:int = 5049
     ENCODING_FORMAT:str = 'utf-8'
     MAX_PACKET_LENGTH_BYTES:int = 0xFFFF
     ACK:str = "G_N_S_ACK"
@@ -56,7 +56,7 @@ class MailBox:
         if len(self.box) == 0:
             return None
 
-        return self.box.pop()
+        return self.box.pop(0)
 
 class MailParcel:
     def __init__(self, ID:str = "", from_address:str = "", to_address:str = "", message:str = "", time_stamp:str=None) -> None:
@@ -125,4 +125,16 @@ class MailParcel:
             self.message += mail.message
 
         return True, relevant_mail_parcels
+    
+    def to_dict(self) -> dict:
+        return {
+            'ID' : self.ID,
+            'from_address': self.from_address,
+            'to_address': self.to_address,
+            'message': self.message,
+            'time_stamp': self.time_stamp
+        }
+    
+    def __repr__(self) -> str:
+        return json.dumps(self.to_dict())
     

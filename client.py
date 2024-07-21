@@ -8,19 +8,25 @@ def listen_to_server(ct):
         if ct.connected:
             ct.listen()
 
-def handle_client_to_client(ct):
-    parcel = ct.next_parcel
+def handle_mail(ct):
+    while True:
+        parcel = ct.next_parcel()
 
-    if parcel:
-        print(parcel)
+        if parcel:
+            print(str(parcel))
 
 def start_client():
     # Start Checking for mail
     listen_to_server_thread = threading.Thread(target=listen_to_server, args=(ct,))
     listen_to_server_thread.start()
 
+    handle_mail_thread = threading.Thread(target=handle_mail, args=(ct,))
+    handle_mail_thread.start()
+
     while True:
-        pass
+        command = input("'ID' 'to_address' 'message'")
+        segments = command.split(' ')
+        ct.send_parcel(segments[0], segments[1], segments[2])
 
 print("[STARTING CLIENT]")
 ct.connect("127.0.0.1")
