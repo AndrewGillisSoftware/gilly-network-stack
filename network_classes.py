@@ -2,6 +2,7 @@ import asyncio
 import socket
 import json
 import time
+import random
 
 class NetworkConfigs:
     PORT:int = 5051
@@ -58,22 +59,22 @@ class MailBox:
         return self.box.pop()
 
 class MailParcel:
-    def __init__(self, ID:str, from_address:str = "", to_address:str = "", message:str = "") -> None:
+    def __init__(self, ID:str = "", from_address:str = "", to_address:str = "", message:str = "", time_stamp:str=None) -> None:
         self.ID = ID
         self.from_address = from_address
         self.to_address = to_address
         self.message = message
+        self.timestamp = time_stamp if time_stamp else str(time.time())
         return
     
     def split(self) -> list[PartialMailParcel]:
-        parcel_time = str(time.time())
         mail_parcels:list[PartialMailParcel] = []
 
         segment_ID:int = 0
         message_bytes = list(self.message)
 
         while len(message_bytes) > 0:
-            current_parcel = PartialMailParcel(self.ID, segment_ID, 0, self.from_address, self.to_address, "", parcel_time)
+            current_parcel = PartialMailParcel(self.ID, segment_ID, 0, self.from_address, self.to_address, "", self.timestamp)
             encoded_parcel = str(current_parcel).encode(NetworkConfigs.ENCODING_FORMAT)
             parcel_header_len:int = len(encoded_parcel)
 
@@ -92,17 +93,23 @@ class MailParcel:
         
         return mail_parcels
     
-    def __list_mail_with_ID(self, mail_parcels:list[PartialMailParcel]) -> list[PartialMailParcel]:
+    def __list_mail_with_ID(self, partial_mail_parcel:PartialMailParcel, mail_parcels:list[PartialMailParcel]) -> list[PartialMailParcel]:
         mail_parcels_with_ID:list[PartialMailParcel] = []
 
         for mail in mail_parcels:
-            if mail.ID == self.ID:
+            if mail.ID == partial_mail_parcel.ID and mail.time_stamp == partial_mail_parcel.time_stamp:
                 mail_parcels_with_ID.append(mail)
 
         return mail_parcels_with_ID
     
-    def pull_from_mail(self, mail_parcels:list[PartialMailParcel]) -> bool:
-        relevant_mail_parcels:PartialMailParcel = self.__list_mail_with_ID(self, mail_parcels)
+    def pull_from_mail(self, partial_mail_parcel:PartialMailParcel, mail_parcels:list[PartialMailParcel]) -> bool:
+        self.ID = partial_mail_parcel.ID
+        self.from_address = partial_mail_parcel.from_address
+        self.to_address = partial_mail_parcel.to_address
+        self.message = ""
+        self.timestamp = partial_mail_parcel.time_stamp
+
+        relevant_mail_parcels:PartialMailParcel = self.__list_mail_with_ID(partial_mail_parcel, mail_parcels)
 
         if len(relevant_mail_parcels) == 0:
             return False
@@ -111,11 +118,11 @@ class MailParcel:
             return False
 
         # Sort Segments
-        relevant_mail_parcels.sort(key=lambda mail: mail.segment)
+        relevant_mail_parcels.sort(key=lambda mail: mail.segment_ID)
 
+        # Concatenate Messages
+        for mail in relevant_mail_parcels:
+            self.message += mail.message
 
-NetworkConfigs.MAX_PACKET_LENGTH_BYTES = 160
-largeMailParcel = MailParcel("Frog", "1.1.1.1", "2.2.2.2", "This frog jumps over the big blue moon. 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21")
-
-mail = largeMailParcel.split()
-print(mail)
+        return True
+    
