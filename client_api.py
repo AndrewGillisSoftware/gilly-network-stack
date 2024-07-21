@@ -17,18 +17,18 @@ class ClientTransport:
         return
 
     # If IP is server the message is for the server
-    def send_parcel(self, purpose, to_address, string_message) -> MailParcel:
+    def send_parcel(self, purpose, to_address, string_message) -> PartialMailParcel:
         # Create Parcel
-        parcel = MailParcel(purpose, self.client_address, to_address, string_message)
+        parcel = PartialMailParcel(purpose, self.client_address, to_address, string_message)
         send_proto(self.client, parcel)
         return
     
-    def get_next_parcel(self) -> MailParcel:
+    def get_next_parcel(self) -> PartialMailParcel:
         # Create Parcel
-        parcel = MailParcel(NEXT_PARCEL, self.client_address, self.server_address, "")
+        parcel = PartialMailParcel(NEXT_PARCEL, self.client_address, self.server_address, "")
         send_proto(self.client, parcel)
 
-        return MailParcel.from_dict(json.loads(recv_proto(self.client)))
+        return PartialMailParcel.from_dict(json.loads(recv_proto(self.client)))
 
     def disconnect(self):
         self.send_parcel(self.server_address, DISCONNECT_MESSAGE)

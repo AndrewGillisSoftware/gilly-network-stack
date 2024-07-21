@@ -11,10 +11,10 @@ class NetworkConfigs:
     ACTIVE_CLIENTS:str = "G_N_S_ACTIVE_CLIENTS"
     DISCONNECT:str = "G_N_S_DISCONNECT"
 
-class MailParcel:
-    def __init__(self, id:str, segment_id:int, segment_count:int, from_address:str, to_address:str, message:str, time_stamp=None):
-        self.id = id
-        self.segment_id = segment_id
+class PartialMailParcel:
+    def __init__(self, ID:str, segment_ID:int, segment_count:int, from_address:str, to_address:str, message:str, time_stamp:str=None):
+        self.ID = ID
+        self.segment_ID = segment_ID
         self.segment_count = segment_count
         self.time_stamp = time_stamp if time_stamp else str(time.time())
         self.from_address = from_address
@@ -24,13 +24,13 @@ class MailParcel:
     
     def to_dict(self) -> dict:
         return {
-            'id' : self.id,
-            'segment_id': self.segment_id,
+            'ID' : self.ID,
+            'segment_ID': self.segment_ID,
             'segment_count': self.segment_count,
-            'time_stamp': self.time_stamp,
             'from_address': self.from_address,
             'to_address': self.to_address,
-            'message': self.message
+            'message': self.message,
+            'time_stamp': self.time_stamp
         }
 
     @classmethod
@@ -44,61 +44,65 @@ class MailBox:
     def __init__(self, server_address:str, address:str):
         self.server_address = server_address
         self.address = address
-        self.box:MailParcel = []
+        self.box:PartialMailParcel = []
         return
 
-    def add_parcel(self, parcel:MailParcel):
+    def add_parcel(self, parcel:PartialMailParcel):
         self.box.append(parcel)
         return
 
-    def get_next_parcel(self) -> MailParcel:
+    def get_next_parcel(self) -> PartialMailParcel:
         if len(self.box) == 0:
             return None
 
         return self.box.pop()
 
-class LargeMailParcel:
-    def __init__(self, id:str, from_address:str = "", to_address:str = "", message:str = "") -> None:
-        self.id = id
+class MailParcel:
+    def __init__(self, ID:str, from_address:str = "", to_address:str = "", message:str = "") -> None:
+        self.ID = ID
         self.from_address = from_address
         self.to_address = to_address
         self.message = message
         return
     
-    def split(self) -> list[MailParcel]:
-        mail_parcels:list[MailParcel] = []
+    def split(self) -> list[PartialMailParcel]:
+        parcel_time = str(time.time())
+        mail_parcels:list[PartialMailParcel] = []
 
-        segment_id:int = 0
+        segment_ID:int = 0
         message_bytes = list(self.message)
 
         while len(message_bytes) > 0:
-            current_parcel = MailParcel(id, segment_id, 0, self.from_address, self.to_address, "") 
-            parcel_header_len:int = len(str(current_parcel).encode(NetworkConfigs.ENCODING_FORMAT))
+            current_parcel = PartialMailParcel(self.ID, segment_ID, 0, self.from_address, self.to_address, "", parcel_time)
+            encoded_parcel = str(current_parcel).encode(NetworkConfigs.ENCODING_FORMAT)
+            parcel_header_len:int = len(encoded_parcel)
 
             parcel_bytes_remaining:int = NetworkConfigs.MAX_PACKET_LENGTH_BYTES - parcel_header_len
 
             while parcel_bytes_remaining:
-                current_parcel.message += message_bytes.pop(0)
+                if len(message_bytes) > 0:
+                    current_parcel.message += message_bytes.pop(0)
+                parcel_bytes_remaining -= 1
 
             mail_parcels.append(current_parcel)
-            segment_id += 1
+            segment_ID += 1
         
         for parcel in mail_parcels:
             parcel.segment_count = len(mail_parcels)
         
         return mail_parcels
     
-    def __list_mail_with_id(self, mail_parcels:list[MailParcel]) -> list[MailParcel]:
-        mail_parcels_with_id:list[MailParcel] = []
+    def __list_mail_with_ID(self, mail_parcels:list[PartialMailParcel]) -> list[PartialMailParcel]:
+        mail_parcels_with_ID:list[PartialMailParcel] = []
 
         for mail in mail_parcels:
-            if mail.id == self.id:
-                mail_parcels_with_id.append(mail)
+            if mail.ID == self.ID:
+                mail_parcels_with_ID.append(mail)
 
-        return mail_parcels_with_id
+        return mail_parcels_with_ID
     
-    def pull_from_mail(self, mail_parcels:list[MailParcel]) -> bool:
-        relevant_mail_parcels:MailParcel = self.__list_mail_with_id(self, mail_parcels)
+    def pull_from_mail(self, mail_parcels:list[PartialMailParcel]) -> bool:
+        relevant_mail_parcels:PartialMailParcel = self.__list_mail_with_ID(self, mail_parcels)
 
         if len(relevant_mail_parcels) == 0:
             return False
@@ -110,3 +114,8 @@ class LargeMailParcel:
         relevant_mail_parcels.sort(key=lambda mail: mail.segment)
 
 
+NetworkConfigs.MAX_PACKET_LENGTH_BYTES = 160
+largeMailParcel = MailParcel("Frog", "1.1.1.1", "2.2.2.2", "This frog jumps over the big blue moon. 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21")
+
+mail = largeMailParcel.split()
+print(mail)
