@@ -1,3 +1,4 @@
+import re
 from network_classes import *
 
 class ClientTransport:
@@ -12,10 +13,26 @@ class ClientTransport:
         self.server_active_clients = []
         return
     
-    def connect(self, server_address):
-        self.server_address = server_address
+    def __is_ip_address(self, ip):
+        ipv4_pattern = re.compile(r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$')
+        ipv6_pattern = re.compile(r'^(?:[A-Fa-f0-9]{1,4}:){7}[A-Fa-f0-9]{1,4}$')
+
+        return bool(ipv4_pattern.match(ip) or ipv6_pattern.match(ip))
+    
+    def __get_ip_from_hostname_if_applicable(self, hostname_or_ip):
+        if self.__is_ip_address(hostname_or_ip):
+            # IP so just return
+            return hostname_or_ip
+        else:
+            # Get IP from hostname
+            return socket.gethostbyname(hostname_or_ip)
+
+    
+    def connect(self, hostname_or_ip):
+        self.server_address = self.__get_ip_from_hostname_if_applicable(hostname_or_ip)
+        print(f"Connecting to {self.server_address}")
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client.connect((server_address, NetworkConfigs.PORT))
+        self.client.connect((self.server_address, NetworkConfigs.PORT))
         self.connected = True
         return
     
