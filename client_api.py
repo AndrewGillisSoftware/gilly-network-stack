@@ -1,5 +1,5 @@
 import re
-from network_classes import *
+from gilly_network_stack.network_classes import *
 
 class ClientTransport:
     def __init__(self):
@@ -59,6 +59,12 @@ class ClientTransport:
             remaining_bytes = NetworkConfigs.MAX_PACKET_LENGTH_BYTES - len(partial_parcel_str.encode(NetworkConfigs.ENCODING_FORMAT))
             padded_partial_parcel = str(partial_parcel) + ('0' * remaining_bytes)
             self.client.send(padded_partial_parcel.encode(NetworkConfigs.ENCODING_FORMAT))
+
+        return
+    
+    def broadcast_parcel(self, ID, to_addresses:list, string_message):
+        for to_address in to_addresses:
+            self.send_parcel(ID, to_address, string_message)
 
         return
     
