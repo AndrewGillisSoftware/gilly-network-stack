@@ -37,10 +37,10 @@ class ClientTransport:
         return
     
     def request_active_clients(self):
-        self.send_parcel(NetworkConfigs.ACTIVE_CLIENTS, self.server_address, "")
+        self.send_parcel(NetworkConfigs.ACTIVE_CLIENTS, self.server_address, "d")
 
     def disconnect(self):
-        self.send_parcel(NetworkConfigs.DISCONNECT, self.server_address, "")
+        self.send_parcel(NetworkConfigs.DISCONNECT, self.server_address, "d")
         self.connect = False
         return
     
@@ -78,7 +78,10 @@ class ClientTransport:
     def listen(self):
         partial_parcel = self.client.recv(NetworkConfigs.MAX_PACKET_LENGTH_BYTES).decode(NetworkConfigs.ENCODING_FORMAT)
         partial_parcel = partial_parcel.split("}")[0] + "}"
-        partial_parcel = PartialMailParcel.from_dict(json.loads(partial_parcel))
+        try:
+            partial_parcel = PartialMailParcel.from_dict(json.loads(partial_parcel))
+        except:
+            return
 
         # Add to the partial mailbox
         self._partial_mail_box.append(partial_parcel)
