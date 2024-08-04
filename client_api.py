@@ -54,7 +54,11 @@ class ClientTransport:
 
         # Send all segments of the parcel
         for partial_parcel in partial_parcels:
-            self.client.send(str(partial_parcel).encode(NetworkConfigs.ENCODING_FORMAT))
+            # Add padding to parcel
+            partial_parcel_str = str(partial_parcel)
+            remaining_bytes = NetworkConfigs.MAX_PACKET_LENGTH_BYTES - len(partial_parcel_str.encode(NetworkConfigs.ENCODING_FORMAT))
+            padded_partial_parcel = str(partial_parcel) + ('0' * remaining_bytes)
+            self.client.send(padded_partial_parcel.encode(NetworkConfigs.ENCODING_FORMAT))
 
         return
     
@@ -67,6 +71,7 @@ class ClientTransport:
     
     def listen(self):
         partial_parcel = self.client.recv(NetworkConfigs.MAX_PACKET_LENGTH_BYTES).decode(NetworkConfigs.ENCODING_FORMAT)
+        partial_parcel = partial_parcel.split("}")[0] + "}"
         partial_parcel = PartialMailParcel.from_dict(json.loads(partial_parcel))
 
         # Add to the partial mailbox

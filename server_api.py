@@ -58,7 +58,13 @@ class ServerTransport:
 
             # Client Sent a Message
             if client_message:
-                client_message_parcel : PartialMailParcel = PartialMailParcel.from_dict(json.loads(client_message))
+                client_message = client_message.decode(NetworkConfigs.ENCODING_FORMAT)
+                client_message = (client_message.split("}")[0] + "}").encode(NetworkConfigs.ENCODING_FORMAT)
+
+                try:
+                    client_message_parcel : PartialMailParcel = PartialMailParcel.from_dict(json.loads(client_message))
+                except:
+                    print(f"[DROPPING PACKET] {client_message_parcel}")
 
                 if NetworkConfigs.DISCONNECT == client_message_parcel.ID:
                     print(f"[DISCONNECTED] {addr}")
@@ -77,7 +83,11 @@ class ServerTransport:
 
                 current_parcel = box.get_next_parcel()
                 while current_parcel:
-                    conn.send(str(current_parcel).encode(NetworkConfigs.ENCODING_FORMAT))
+                     # Add padding to parcel
+                    partial_parcel_str = str(current_parcel)
+                    remaining_bytes = NetworkConfigs.MAX_PACKET_LENGTH_BYTES - len(partial_parcel_str)
+                    padded_partial_parcel = partial_parcel_str + ('0' * remaining_bytes)
+                    conn.send(padded_partial_parcel.encode(NetworkConfigs.ENCODING_FORMAT))
                     current_parcel = box.get_next_parcel()
         
         self.__deregister_client(client_address)

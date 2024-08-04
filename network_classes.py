@@ -7,7 +7,7 @@ import time
 class NetworkConfigs:
     PORT:int = 5049
     ENCODING_FORMAT:str = 'utf-8'
-    MAX_PACKET_LENGTH_BYTES:int = 0xFFFF
+    MAX_PACKET_LENGTH_BYTES:int = 1028
     ACK:str = "G_N_S_ACK"
     ACTIVE_CLIENTS:str = "G_N_S_ACTIVE_CLIENTS"
     DISCONNECT:str = "G_N_S_DISCONNECT"
