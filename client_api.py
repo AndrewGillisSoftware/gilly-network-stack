@@ -30,7 +30,7 @@ class ClientTransport:
     
     def connect(self, hostname_or_ip):
         self.server_address = self.__get_ip_from_hostname_if_applicable(hostname_or_ip)
-        print(f"Connecting to {self.server_address}")
+        d_print(f"Connecting to {self.server_address}")
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect((self.server_address, NetworkConfigs.PORT))
         self.connected = True

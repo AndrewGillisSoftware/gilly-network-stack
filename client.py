@@ -13,9 +13,9 @@ def handle_mail(ct):
         parcel = ct.next_parcel()
 
         if parcel:
-            print(str(parcel))
+            d_print(str(parcel))
         if len(ct.server_active_clients) > 0:
-            print(ct.server_active_clients)
+            d_print(ct.server_active_clients)
 
 def start_client():
     # Start Checking for mail
@@ -30,7 +30,7 @@ def start_client():
         segments = command.split(' ')
         ct.send_parcel(segments[0], segments[1], segments[2])
 
-print("[STARTING CLIENT]")
+d_print("[STARTING CLIENT]")
 server_ip = input("IP:")
 ct.connect(server_ip)
 start_client()

@@ -41,7 +41,7 @@ class ServerTransport:
 
     def __handle_client_proto(self, conn, addr):
         client_address = addr[0]
-        print(f"[NEW CONNECTION] {addr} connected.")
+        d_print(f"[NEW CONNECTION] {addr} connected.")
 
         self.__register_client(client_address)
     
@@ -52,7 +52,7 @@ class ServerTransport:
                 client_message = conn.recv(NetworkConfigs.MAX_PACKET_LENGTH_BYTES)
             except:
                 # Client Force Closed
-                print(f"[FORCE DISCONNECTED] {addr}")
+                d_print(f"[FORCE DISCONNECTED] {addr}")
                 self.__deregister_client(addr)
                 return
 
@@ -64,10 +64,10 @@ class ServerTransport:
                 try:
                     client_message_parcel : PartialMailParcel = PartialMailParcel.from_dict(json.loads(client_message))
                 except:
-                    print(f"[DROPPING PACKET] {client_message_parcel}")
+                    d_print(f"[DROPPING PACKET] {client_message_parcel}")
 
                 if NetworkConfigs.DISCONNECT == client_message_parcel.ID:
-                    print(f"[DISCONNECTED] {addr}")
+                    d_print(f"[DISCONNECTED] {addr}")
                     connected = False
                     break
                 elif NetworkConfigs.ACTIVE_CLIENTS == client_message_parcel.ID:
@@ -76,7 +76,7 @@ class ServerTransport:
                     cmp = client_message_parcel
                     self.send_to_client(cmp.ID, cmp.from_address, cmp.to_address, cmp.message)
                     
-                print(f"[{client_address}] {client_message}")
+                d_print(f"[{client_address}] {client_message}")
 
                 # Send all of the mail for the client
                 box = self.__get_mailbox(client_address)
@@ -94,15 +94,15 @@ class ServerTransport:
         conn.close()
 
     def start(self):
-        print("[STARTING] server is starting...")
+        d_print("[STARTING] server is starting...")
         self.server.listen()
 
-        print(f"[LISTENING] Server is listening on {self.address}")
+        d_print(f"[LISTENING] Server is listening on {self.address}")
         while True:
             conn, addr = self.server.accept()
             thread = threading.Thread(target=self.__handle_client_proto, args=(conn, addr))
             thread.start()
-            print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")
+            d_print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")
     
     def send_to_client(self, ID, from_address, to_address, msg):
         box = self.__get_mailbox(to_address)
