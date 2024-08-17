@@ -1,4 +1,4 @@
-from gilly_network_stack.utils import *
+from .utils import *
 import threading
 import asyncio
 import socket

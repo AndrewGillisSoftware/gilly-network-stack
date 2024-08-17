@@ -1,4 +1,4 @@
-from network_classes import *
+from .network_classes import *
 class ServerTransport:
 
     mail_boxes = []
@@ -64,7 +64,7 @@ class ServerTransport:
                 try:
                     client_message_parcel : PartialMailParcel = PartialMailParcel.from_dict(json.loads(client_message))
                 except:
-                    d_print(f"[DROPPING PACKET] {client_message_parcel}")
+                    dv_print(f"[DROPPING PACKET] {client_message_parcel}")
 
                 if NetworkConfigs.DISCONNECT == client_message_parcel.ID:
                     d_print(f"[DISCONNECTED] {addr}")
@@ -76,7 +76,7 @@ class ServerTransport:
                     cmp = client_message_parcel
                     self.send_to_client(cmp.ID, cmp.from_address, cmp.to_address, cmp.message)
                     
-                d_print(f"[{client_address}] {client_message}")
+                dv_print(f"[{client_address}] {client_message}")
 
                 # Send all of the mail for the client
                 box = self.__get_mailbox(client_address)
@@ -94,7 +94,7 @@ class ServerTransport:
         conn.close()
 
     def start(self):
-        d_print("[STARTING] server is starting...")
+        dv_print("[STARTING] server is starting...")
         self.server.listen()
 
         d_print(f"[LISTENING] Server is listening on {self.address}")
@@ -102,7 +102,7 @@ class ServerTransport:
             conn, addr = self.server.accept()
             thread = threading.Thread(target=self.__handle_client_proto, args=(conn, addr))
             thread.start()
-            d_print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")
+            dv_print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")
     
     def send_to_client(self, ID, from_address, to_address, msg):
         box = self.__get_mailbox(to_address)

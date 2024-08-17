@@ -1,1 +1,5 @@
 #gilly-network-stack
+
+Call the following from the parent directory
+
+python -m gilly_network_stack.server
